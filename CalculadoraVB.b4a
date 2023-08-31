@@ -1,0 +1,188 @@
+﻿Build1=Default,b4a.example
+File1=calculadoraVB.bal
+FileGroup1=Default Group
+Group=Default Group
+Library1=core
+ManifestCode='This code will be applied to the manifest file during compilation.~\n~'You do not need to modify it in most cases.~\n~'See this link for for more information: http://www.basic4ppc.com/forum/showthread.php?p=78136~\n~AddManifestText(~\n~<uses-sdk android:minSdkVersion="4" android:targetSdkVersion="14"/>~\n~<supports-screens android:largeScreens="true" ~\n~    android:normalScreens="true" ~\n~    android:smallScreens="true" ~\n~    android:anyDensity="true"/>)~\n~SetApplicationAttribute(android:icon, "@drawable/icon")~\n~SetApplicationAttribute(android:label, "$LABEL$")~\n~'End of default text.~\n~
+NumberOfFiles=1
+NumberOfLibraries=1
+NumberOfModules=0
+Version=12.5
+@EndOfDesignText@
+#Region  Project Attributes 
+	#ApplicationLabel: CalculadoraVB 4
+	#VersionCode: 1
+	#VersionName: 
+	'SupportedOrientations possible values: unspecified, landscape or portrait.
+	#SupportedOrientations: unspecified
+	#CanInstallToExternalStorage: False
+#End Region
+
+#Region  Activity Attributes 
+	#FullScreen: False
+	#IncludeTitle: True
+#End Region
+
+Sub Process_Globals
+End Sub
+
+Sub Globals
+Dim Digito As Boolean = False
+Dim comaDecimal As Boolean
+Dim oper(3) As Byte	' 0 para operaciones +,-,%
+										' 1 para operaciones * y /
+										' 2 para operaciones ^ y n-raiz
+Dim reg(3,3) As Double
+Dim operando1 As Double
+Dim workT As Double
+Dim Cmd() As Button
+Dim Button0, Button1, Button2, Button3, Button4, Button5, Button6, Button7, Button8, Button9 As Button
+Dim etPantalla As Label
+Dim btDividir As Button
+Dim btMenos As Button
+Dim btPor As Button
+Dim btMas As Button
+Dim btIgual As Button
+Dim btTantoPorCiento As Button
+Dim btBorrarEntrada As Button
+Dim btIniciar As Button
+End Sub
+
+Sub Activity_Create(FirstTime As Boolean)
+Activity.LoadLayout("calculadoravb")
+Cmd = Array As Button (Button0, Button1, Button2, Button3, Button4, Button5, Button6, Button7, Button8, Button9, _
+											 btDividir, btMenos,btPor, btMas, btIgual)
+For i = 0 To 2
+  oper(i) = 0
+	For p = 1 To 2
+  	reg(p,i) = 0
+	Next
+Next
+End Sub
+
+Sub Activity_Resume
+End Sub
+
+Sub Activity_Pause (UserClosed As Boolean)
+End Sub
+
+Sub Cmd_Click()
+Dim send As Button
+send = Sender
+Select send.Text
+'Digitos
+Case Else:
+If Digito = False Then
+	If send.Text = "0" Then Return
+	etPantalla.Text = ""
+	Digito = True
+	comaDecimal = False
+End If
+etPantalla.Text = etPantalla.Text & send.Text 
+'Coma Decimal
+Case ".":
+If Digito = False Then
+  etPantalla.Text = "0."
+	Digito = True
+Else If comaDecimal = False Then
+  etPantalla.Text = etPantalla.Text & "."
+End If
+comaDecimal = True
+'Operadores
+Case "+":
+	operando1 = etPantalla.Text
+	op_level(0)
+	oper(0) = 1
+	Digito = False
+Case "-":
+	operando1 = etPantalla.Text
+	op_level(0)
+	oper(0) = 2
+	Digito = False
+Case "x":
+	operando1 = etPantalla.Text
+	op_level(1)
+	oper(1) = 3
+	Digito = False
+Case "/":
+	operando1 = etPantalla.Text
+	op_level(1)
+	oper(1) = 4
+	Digito = False
+Case "=":
+	operando1 = etPantalla.Text
+	op_level(0)
+	Digito = False
+'Tanto Por Ciento 
+Case "%":
+Dim resultado As Double
+If Digito Then
+  resultado = operando1 * etPantalla.Text / 100
+  ' Visualizar el resultado
+  etPantalla.Text = resultado
+  ' Simular que se ha hecho clic en "="
+  'btIgual_Click
+  ' Enfocar la tecla %
+  btTantoPorCiento.RequestFocus
+End If
+'Iniciar
+Case "C":
+	etPantalla.Text = ""
+	comaDecimal = False
+	Digito = False
+	operando1 = 0
+	For i = 0 To 2
+	  oper(i) = 0
+		For p = 1 To 2
+	  	reg(p,i) = 0
+		Next
+	Next
+'Borrar Entrada
+Case "CE":
+	etPantalla.Text = ""
+	Digito = False
+	comaDecimal = False
+End Select
+End Sub
+
+Sub op_level(n As Byte)
+Operacion(reg(1,2),oper(2),operando1)
+reg(1,2) = workT
+If n < 2 Then
+	Operacion(reg(1,1),oper(1),reg(1,2))
+	reg(1,1)=workT
+End If
+If n = 0 Then
+	Operacion(reg(1,0),oper(0),reg(1,1))
+	reg(1,0)=workT
+End If
+etPantalla.Text = reg(1,n)
+End Sub
+
+Sub Operacion(work1 As Double, Operator As Char, work2 As Double)
+'If work2 = "" Then work2 = 0
+Select Case Operator
+	Case 0: 
+		workT = work2
+  Case 1 :	' +
+		workT = work1 + work2
+		oper(0) = 0
+  Case 2 : ' -
+		workT = work1 - work2
+		oper(0) = 0
+  Case 3 : ' *
+		workT = work1 * work2
+		oper(1) = 0
+  Case 4 : ' /
+		workT = work1 / work2
+		oper(1) = 0
+End Select
+' Visualizar el resultado
+etPantalla.Text = workT
+End Sub
+
+
+
+
+
+
